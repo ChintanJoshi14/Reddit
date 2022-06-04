@@ -11,6 +11,25 @@ export const GET_ALL_POSTS = gql`
       subreddit_id
       title
       username
+      commentList {
+        id
+        created_at
+        post_id
+        text
+        username
+      }
+      subreddit {
+        created_at
+        id
+        topic
+      }
+      voteList {
+        created_at
+        id
+        post_id
+        upvote
+        username
+      }
     }
   }
 
