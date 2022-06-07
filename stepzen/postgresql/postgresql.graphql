@@ -17,9 +17,9 @@ type Post {
   created_at: DateTime
   id: ID!
   image: String
-  subreddit: Subreddit
+  subreddit: [Subreddit]
     @materializer(
-      query: "getSubreddit"
+      query: "getSubredditListById"
       arguments: [{ name: "id", field: "subreddit_id" }]
     )
   subreddit_id: ID
@@ -31,7 +31,7 @@ type Post {
 type Subreddit {
   created_at: DateTime
   id: ID!
-  postList: [Post] @materializer(query: "getPostUsingSubreddit_id")
+  # postList: [Post] @materializer(query: "getPostUsingSubreddit_id")
   topic: String
 }
 
@@ -69,10 +69,19 @@ type Query {
   getPostList: [Post]
     @dbquery(
       type: "postgresql"
-      schema: "public"
-      table: "post"
+      # schema: "public"
+      # table: "post"
+      query: """
+      select * from "post" order by "post"."created_at" desc
+      """
       configuration: "postgresql_config"
     )
+    getPostListByTopic(topic: String!): [Post]
+      @dbquery(
+        type: "postgresql"
+        query: """select *, "post".id as id from "post" join "subreddit" on "subreddit"."id" = "post"."subreddit_id" where "subreddit"."topic" = $1 order by "post"."created_at" desc """
+        configuration: "postgresql_config"
+      )
   getPost(id: ID!): Post
     @dbquery(
       type: "postgresql"
@@ -112,7 +121,16 @@ type Query {
       type: "postgresql"
       schema: "public"
       query: """
-       select * from "subreddit" where "topic" = $1
+      select * from "subreddit" where "topic" = $1
+      """
+      configuration: "postgresql_config"
+    )
+  getSubredditListById(id: ID!): [Subreddit]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      select * from "subreddit" where "id" = $1
       """
       configuration: "postgresql_config"
     )

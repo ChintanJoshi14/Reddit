@@ -5,7 +5,7 @@ import { LinkIcon, PhotographIcon } from '@heroicons/react/outline'
 import { useForm } from 'react-hook-form'
 import { useMutation } from '@apollo/client'
 import { ADD_POST, ADD_SUBREDDIT } from '../graphql/mutations'
-import { GET_SUBREDDIT_BY_TOPIC } from '../graphql/queries'
+import { GET_ALL_POSTS, GET_SUBREDDIT_BY_TOPIC } from '../graphql/queries'
 import client from '../apollo-client'
 import toast from 'react-hot-toast'
 // import { text } from 'stream/consumers'
@@ -17,8 +17,15 @@ type FormData = {
   subreddit: string
 }
 
-function PostBox() {
-  const [addPost, { loading, error, data }] = useMutation(ADD_POST);
+type Props = {
+  subreddit?: string
+}
+
+function PostBox({ subreddit }: Props) {
+  // console.log(subreddit)
+  const [addPost, { loading, error, data }] = useMutation(ADD_POST, {
+    refetchQueries: [GET_ALL_POSTS, 'getPostList'],
+  });
   const [addSubreddit] = useMutation(ADD_SUBREDDIT);
   const { data: session } = useSession()
   const [imageBoxOpen, setImageBoxOpen] = useState<boolean>(false)
@@ -42,7 +49,7 @@ function PostBox() {
       } = await client.query({
         query: GET_SUBREDDIT_BY_TOPIC,
         variables: {
-          topic: formData.subreddit,
+          topic: subreddit || formData.subreddit, //will prioritize subreddit over formData.subreddit
         },
       })
 
@@ -122,7 +129,7 @@ function PostBox() {
           className="flex-1 rounded-md bg-gray-50  p-2 pl-5 outline-none"
           type="text"
           placeholder={
-            session ? 'Create a post by entering a title' : 'Sign in to post'
+            session ? subreddit ? `Create a post in r/${subreddit}` : 'Create a post by entering a title' : 'Sign in to post'
           }
         />
 
@@ -148,7 +155,8 @@ function PostBox() {
             />
           </div>
 
-          <div className="flex items-center px-2">
+          {!subreddit &&  //if subreddit prop is not passed only then render the following div
+          (<div className="flex items-center px-2">
             <p className="min-w-[90px]">Subreddit:</p>
             <input
               className="m-2 flex-1 bg-blue-50 p-2 outline-none"
@@ -156,7 +164,8 @@ function PostBox() {
               type="text"
               placeholder="anything"
             />
-          </div>
+          </div>)
+          }
 
           {imageBoxOpen && (
             <div className="flex items-center px-2">
