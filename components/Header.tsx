@@ -12,6 +12,7 @@ import {
   VideoCameraIcon,
 } from '@heroicons/react/outline'
 import { signIn, signOut, useSession } from 'next-auth/react'
+import Link from 'next/link'
 
 function Header() {
   const { data: session } = useSession() // when we login we get a session cookie which proves who we are and we need to use useSession hook to access session property. useSession returns "data" ans we are renaming it to "session"
@@ -19,11 +20,13 @@ function Header() {
   return (
     <div className="sticky top-0 z-50 flex bg-white px-4 py-2 shadow-sm items-center">
       <div className="relative h-10 w-20 flex-shrink-0 cursor-pointer">
+        <Link href="/">
         <Image
           objectFit="contain"
           src="https://links.papareact.com/fqy"
           layout="fill"
         />
+        </Link>
       </div>
 
       <div className="mx-7 flex items-center xl:min-w-[300px]">
@@ -61,7 +64,10 @@ function Header() {
       {/* Sign in Sign out button */}
       {session ? (
         <div
-          onClick={() => signOut()}
+          onClick={() => {
+            <Link href="/"></Link>
+            signOut()
+          }}
           className="hidden cursor-pointer items-center space-x-2 border border-gray-100 p-2 lg:flex"
         >
           <div className="relative h-5 w-5 flex-shrink-0">

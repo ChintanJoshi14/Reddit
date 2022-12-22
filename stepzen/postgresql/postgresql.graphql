@@ -25,7 +25,8 @@ type Post {
   subreddit_id: ID
   title: String
   username: String
-  voteList: [Vote] @materializer(query: "getVoteUsingPost_id")
+  voteList: [Vote]
+  # @materializer(query: "getVoteUsingPost_id")
 }
 
 type Subreddit {
@@ -43,9 +44,9 @@ type Vote {
       query: "getPost"
       arguments: [{ name: "id", field: "post_id" }]
     )
-  post_id: ID
-  upvote: Int
-  username: String
+  post_id: ID!  
+  upvote: Boolean!
+  username: String!
 }
 
 """
@@ -76,12 +77,24 @@ type Query {
       """
       configuration: "postgresql_config"
     )
-    getPostListByTopic(topic: String!): [Post]
-      @dbquery(
-        type: "postgresql"
-        query: """select *, "post".id as id from "post" join "subreddit" on "subreddit"."id" = "post"."subreddit_id" where "subreddit"."topic" = $1 order by "post"."created_at" desc """
-        configuration: "postgresql_config"
-      )
+
+  getPostListByPostId(post_id: ID!): Post
+    @dbquery(
+      type: "postgresql"
+      query: """
+       select * from "post" where "post"."id" = $1
+      """
+      configuration: "postgresql_config"
+    )
+
+  getPostListByTopic(topic: String!): [Post]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select *, "post".id as id from "post" join "subreddit" on "subreddit"."id" = "post"."subreddit_id" where "subreddit"."topic" = $1 order by "post"."created_at" desc
+      """
+      configuration: "postgresql_config"
+    )
   getPost(id: ID!): Post
     @dbquery(
       type: "postgresql"
@@ -99,13 +112,12 @@ type Query {
       """
       configuration: "postgresql_config"
     )
-  getVoteUsingPost_id(id: ID!): [Vote]
+  getVotesByPostId(post_id: ID!): [Vote]
     @dbquery(
       type: "postgresql"
+      schema: "public"
       query: """
-      SELECT T."created_at", T."id", T."post_id", T."upvote", T."username"
-        FROM "public"."vote" T
-        WHERE T."post_id" = $1
+      select * from "vote" where "post"."id" = $1 order by "created_at" desc
       """
       configuration: "postgresql_config"
     )
@@ -171,12 +183,7 @@ type Query {
 These are some examples of mutations generated from the schema. Feel free to modify them or add your own.
 """
 type Mutation {
-  insertComment(
-    post_id: ID!
-    text: String!
-    created_at: DateTime!
-    username: String!
-  ): Comment
+  insertComment(post_id: ID!, text: String!, username: String!): Comment
     @dbquery(
       type: "postgresql"
       schema: "public"
@@ -230,12 +237,7 @@ type Mutation {
       dml: DELETE
       configuration: "postgresql_config"
     )
-  insertVote(
-    post_id: ID!
-    created_at: DateTime!
-    upvote: Int!
-    username: String!
-  ): Vote
+  insertVote(post_id: ID!, username: String!, upvote: Boolean!): Vote
     @dbquery(
       type: "postgresql"
       schema: "public"
@@ -251,4 +253,12 @@ type Mutation {
       dml: DELETE
       configuration: "postgresql_config"
     )
+
+  # insertComment(post_id: ID!, username: String!, text: String!): Comment
+  # @dbquery(
+  #   type: "postgresql"
+  #   table: "comment"
+  #   dml: INSERT
+  #   configuration: "postgresql_config"
+  # )
 }

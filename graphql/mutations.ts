@@ -1,6 +1,18 @@
 import { gql } from '@apollo/client'
 // import { useCallback, useEffect } from 'react'
 
+export const ADD_COMMENT = gql`
+  mutation AddComment($post_id: ID!, $username: String!, $text: String!) {
+    insertComment(post_id: $post_id, username: $username, text: $text) {
+      created_at
+      id
+      post_id
+      username  
+      text
+    }
+  }
+`
+
 export const ADD_POST = gql`
   mutation AddPost(
     $body: String!
@@ -34,6 +46,19 @@ export const ADD_SUBREDDIT = gql`
       created_at
     }
   }
+`
+
+export const ADD_VOTE = gql`
+mutation AddVote($post_id: ID!, $username: String!, $upvote: Boolean!) {
+  insertVote(post_id: $post_id, username: $username, upvote: $upvote) {
+    id
+    created_at
+    username
+    post_id
+    upvote
+  }
+}
+
 
 
 `

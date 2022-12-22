@@ -23,9 +23,10 @@ type Props = {
 
 function PostBox({ subreddit }: Props) {
   // console.log(subreddit)
-  const [addPost, { loading, error, data }] = useMutation(ADD_POST, {
-    refetchQueries: [GET_ALL_POSTS, 'getPostList'],
-  });
+  const [addPost] = useMutation(ADD_POST, {
+    refetchQueries: [{query: GET_ALL_POSTS}, 'getPostList'],
+  }
+  );
   const [addSubreddit] = useMutation(ADD_SUBREDDIT);
   const { data: session } = useSession()
   const [imageBoxOpen, setImageBoxOpen] = useState<boolean>(false)
@@ -119,7 +120,7 @@ function PostBox({ subreddit }: Props) {
     // <div>
     <form
       onSubmit={onSubmit}
-      className="sticky top-16 z-50 rounded-md border border-gray-300 bg-white p-2"
+      className="sticky top-20 z-50 rounded-md border border-gray-300 bg-white p-2"
     >
       <div className="flex items-center space-x-3">
         <Avatar />
